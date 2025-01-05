@@ -17,6 +17,7 @@ extra-doc-files:    CHANGELOG.md
 common language
   default-language: GHC2021
   default-extensions:
+    DeriveAnyClass
     DerivingStrategies
     OverloadedStrings
     ViewPatterns
@@ -37,6 +38,7 @@ library
     dns ^>=4.2,
     http-api-data ^>=0.6,
     http-client ^>=0.7,
+    http-types ^>=0.12,
     text ^>=2.0,
 
 test-suite bluesky-tools-test
