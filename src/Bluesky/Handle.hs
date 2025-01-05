@@ -1,6 +1,7 @@
 module Bluesky.Handle
   ( Handle, rawHandle, makeHandle, HandleError(..), validTld
-  , resolveViaDns, resolveViaHttp, resolveViaBoth, resolveVerify
+  , resolveViaDns, resolveViaHttp, resolveViaBoth, BothFailed(..)
+  , resolveVerify
   ) where
 
 import qualified Control.Concurrent.Async as Async

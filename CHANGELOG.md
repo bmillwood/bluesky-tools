@@ -1,5 +1,10 @@
 # Revision history for bluesky-tools
 
+## 0.2.2.0 -- 2024-01-05
+
+* Fix build error
+* Export unintentionally-hidden BothFailed
+
 ## 0.2.0.0 -- 2024-01-05
 
 * Handle type, smart constructor, and tests.
