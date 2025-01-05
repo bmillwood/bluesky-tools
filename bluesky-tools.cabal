@@ -1,9 +1,14 @@
 cabal-version:      3.4
 
 name:               bluesky-tools
-version:            0.1.0.0
+version:            0.2.0.0
 synopsis:           Tools for interacting with Bluesky / AT Protocol
--- description:
+description:
+  bluesky-tools provides tools that I've found useful while trying to integrate
+  my applications with the Bluesky social network (https://bsky.social).
+  Some or most of the tools are more correctly AT protocol tools, rather than
+  specific to Bluesky, but I have not made that distinction in the docs.
+
 license:            BSD-3-Clause
 license-file:       LICENSE
 author:             Ben Millwood
@@ -13,6 +18,10 @@ category:           Web
 build-type:         Simple
 extra-doc-files:    CHANGELOG.md
 -- extra-source-files:
+
+source-repository head
+  type: git
+  location: https://github.com/bmillwood/bluesky-tools
 
 common language
   default-language: GHC2021

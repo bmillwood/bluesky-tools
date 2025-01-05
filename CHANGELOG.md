@@ -1,6 +1,6 @@
 # Revision history for bluesky-tools
 
-## 0.1.0.0 -- YYYY-mm-dd
+## 0.2.0.0 -- 2024-01-05
 
 * Handle type, smart constructor, and tests.
 * Resolving handles to DIDs via DNS and HTTP.
