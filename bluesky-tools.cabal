@@ -1,7 +1,7 @@
 cabal-version:      3.4
 
 name:               bluesky-tools
-version:            0.2.2.0
+version:            0.3.0.0
 synopsis:           Tools for interacting with Bluesky / AT Protocol
 description:
   bluesky-tools provides tools that I've found useful while trying to integrate
@@ -46,10 +46,12 @@ library
     aeson ^>=2.1,
     async ^>=2.2,
     base ^>=4.18,
+    containers ^>=0.6,
     dns ^>=4.2,
     http-api-data ^>=0.6,
     http-client ^>=0.7,
     http-types ^>=0.12,
+    network-uri ^>=2.6,
     text ^>=2.0,
     transformers ^>=0.6,
 

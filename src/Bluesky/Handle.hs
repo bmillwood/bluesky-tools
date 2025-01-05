@@ -160,7 +160,7 @@ resolveViaBoth httpManager handle =
 resolveVerify :: HasCallStack => HTTP.Manager -> Handle -> IO (Maybe Did)
 resolveVerify httpManager handle@(Handle rawHandle) = runMaybeT $ do
   did <- MaybeT $ resolveViaBoth httpManager handle
-  Document{ alsoKnownAs } <- MaybeT $ getDocument httpManager did
-  unless (("at://" <> rawHandle) `elem` alsoKnownAs) $
+  aka <- fmap alsoKnownAs . MaybeT $ getDocument httpManager did
+  unless (("at://" <> rawHandle) `elem` aka) $
     error "Handle isn't in alsoKnownAs for its DID document"
   pure did

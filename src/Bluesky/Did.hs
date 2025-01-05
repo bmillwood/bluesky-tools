@@ -1,10 +1,15 @@
 module Bluesky.Did
   ( Did(Did), rawDid
-  , Document(Document, alsoKnownAs)
+  , Document(alsoKnownAs), getPds
   , getDocument
   ) where
 
 import qualified Data.Aeson as Aeson
+import Data.Aeson ((.:))
+import qualified Data.Aeson.Types as Aeson
+import qualified Data.Map as Map
+import Data.Maybe
+import Data.Monoid (First(First, getFirst))
 import qualified Data.Text as Text
 import Data.Text (Text)
 import GHC.Generics
@@ -12,6 +17,7 @@ import GHC.Stack
 
 import qualified Network.HTTP.Client as HTTP
 import qualified Network.HTTP.Types.Status as HTTP
+import qualified Network.URI as URI
 
 -- | https://atproto.com/specs/did
 -- A DID is a Decentralized Identifier. They're codified by various W3C
@@ -36,14 +42,55 @@ method Did{ rawDid }
   | "did:plc:" `Text.isPrefixOf` rawDid = Just Plc
   | otherwise = Nothing
 
--- | Currently this is only used for ensuring a handle that has been resolved to
--- a DID is referenced by the DID document (so it is the correct handle for this
--- DID). The other fields are ignored.
-data Document = Document
-  { id :: Did
-  , alsoKnownAs :: [Text]
+data Service = Service
+  { serviceId :: Text
+  , serviceType :: Text
+  , serviceEndpoint :: URI.URI
   } deriving stock (Eq, Ord, Show, Generic)
-    deriving anyclass (Aeson.FromJSON)
+
+instance Aeson.FromJSON Service where
+  parseJSON = Aeson.withObject "Service" $ \o -> do
+    serviceId <- o .: "id"
+    serviceType <- o .: "type"
+    serviceEndpointString <- o .: "serviceEndpoint" -- [sic]
+    serviceEndpoint <-
+      maybe
+        (fail $ "Couldn't parse serviceEndpoint URI: " <> show serviceEndpointString)
+        pure
+        $ URI.parseURI serviceEndpointString
+    pure Service{ serviceId, serviceType, serviceEndpoint }
+
+-- | Fields that the library currently doesn't understand are ignored.
+data Document = Document
+  { documentId :: Did
+  , alsoKnownAs :: [Text]
+  , service :: [Service]
+  } deriving stock (Eq, Ord, Show, Generic)
+
+getPds :: Document -> Maybe URI.URI
+getPds Document{ service } =
+  getFirst $ foldMap (First . get) service
+  where
+    get Service{ serviceId, serviceType, serviceEndpoint }
+      | "#atproto_pds" `Text.isSuffixOf` serviceId
+        && serviceType == "AtprotoPersonalDataServer"
+        = Just serviceEndpoint
+      | otherwise = Nothing
+
+genericParseJSONMapFields
+  :: (Generic a, Aeson.GFromJSON Aeson.Zero (Rep a))
+  => [(String, String)] -> Aeson.Value -> Aeson.Parser a
+genericParseJSONMapFields fields =
+  Aeson.genericParseJSON
+    Aeson.defaultOptions{ Aeson.fieldLabelModifier = mapFields }
+  where
+    mapFields field = fromMaybe field (Map.lookup field fieldsMap)
+    fieldsMap = Map.fromList fields
+
+instance Aeson.FromJSON Document where
+  parseJSON =
+    genericParseJSONMapFields
+      [("documentId", "id")]
 
 -- | This is currently only implemented for did:plc: DIDs.
 getDocument :: HasCallStack => HTTP.Manager -> Did -> IO (Maybe Document)
