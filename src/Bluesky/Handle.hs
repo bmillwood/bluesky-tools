@@ -1,11 +1,16 @@
 module Bluesky.Handle
   ( Handle, rawHandle, makeHandle, HandleError(..), validTld
+  , Did, rawDid, resolveViaDns
   ) where
 
 import qualified Data.Bifunctor as Bifunctor
 import Data.Char
 import qualified Data.Text as Text
+import qualified Data.Text.Encoding as Text
 import Data.Text (Text)
+import GHC.Stack (HasCallStack)
+
+import qualified Network.DNS as DNS
 import Web.HttpApiData (FromHttpApiData (parseUrlPiece))
 
 -- | https://atproto.com/specs/handle
@@ -46,17 +51,42 @@ makeHandle t
 
 -- | See "Additonal Non-Syntax Restrictions" in the spec
 validTld :: Handle -> Bool
-validTld (Handle h) = case Text.breakOnEnd "." h of
-  (_, tld) -> tld `notElem`
-    [ "alt"
-    , "arpa"
-    , "example"
-    , "internal"
-    , "invalid"
-    , "local"
-    , "localhost"
-    , "onion"
+validTld (Handle h) =
+  all (\tld -> not (tld `Text.isSuffixOf` h))
+    [ ".alt"
+    , ".arpa"
+    , ".example"
+    , ".internal"
+    , ".invalid"
+    , ".local"
+    , ".localhost"
+    , ".onion"
     ]
 
 instance FromHttpApiData Handle where
   parseUrlPiece = Bifunctor.first (Text.pack . show) . makeHandle
+
+-- | https://atproto.com/specs/did
+newtype Did = Did { rawDid :: Text }
+  deriving stock (Eq, Ord, Show)
+
+-- | Returns 'Nothing' in ordinary cases where this handle can't be resolved by
+-- DNS. May raise an exception if either the handle has an invalid TLD or
+-- something goes wrong with DNS resolution.
+--
+-- Note that this handle shouldn't be considered valid for this DID until you've
+-- looked up the associated DID document and checked it appears there.
+resolveViaDns :: HasCallStack => Handle -> IO (Maybe Did)
+resolveViaDns handle@(Handle rawHandle)
+  | not (validTld handle) = error "handle has invalid TLD"
+  | otherwise = do
+      -- should we share rs / the resolver between calls?
+      rs <- DNS.makeResolvSeed DNS.defaultResolvConf
+      results <- DNS.withResolver rs $ \resolver ->
+        DNS.lookupTXT resolver ("_atproto." <> Text.encodeUtf8 rawHandle)
+      case results of
+        Right [Text.decodeASCII -> Text.stripPrefix "did=" -> Just rawDid] ->
+          pure (Just (Did rawDid))
+        Right [] -> pure Nothing
+        Left DNS.NameError -> pure Nothing
+        other -> error (show other)
