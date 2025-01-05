@@ -30,6 +30,7 @@ library
   import: warnings
   hs-source-dirs: src
   exposed-modules:
+    Bluesky.Did
     Bluesky.Handle
   -- other-modules:
   build-depends:
@@ -40,6 +41,7 @@ library
     http-client ^>=0.7,
     http-types ^>=0.12,
     text ^>=2.0,
+    transformers ^>=0.6,
 
 test-suite bluesky-tools-test
   import: language

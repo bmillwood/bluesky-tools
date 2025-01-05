@@ -1,8 +1,12 @@
 module Bluesky.Handle
   ( Handle, rawHandle, makeHandle, HandleError(..), validTld
-  , Did, rawDid, resolveViaDns, resolveViaHttp
+  , resolveViaDns, resolveViaHttp, resolveViaBoth, resolveVerify
   ) where
 
+import qualified Control.Concurrent.Async as Async
+import qualified Control.Exception as Except
+import Control.Monad
+import Control.Monad.Trans.Maybe
 import qualified Data.Aeson as Aeson
 import Data.Aeson ((.:))
 import qualified Data.Aeson.Types as Aeson
@@ -17,6 +21,8 @@ import qualified Network.DNS as DNS
 import qualified Network.HTTP.Client as HTTP
 import qualified Network.HTTP.Types.Status as HTTP
 import Web.HttpApiData (FromHttpApiData (parseUrlPiece))
+
+import Bluesky.Did
 
 -- | https://atproto.com/specs/handle
 newtype Handle = Handle { rawHandle :: Text }
@@ -71,11 +77,6 @@ validTld (Handle h) =
 instance FromHttpApiData Handle where
   parseUrlPiece = Bifunctor.first (Text.pack . show) . makeHandle
 
--- | https://atproto.com/specs/did
-newtype Did = Did { rawDid :: Text }
-  deriving stock (Eq, Ord, Show)
-  deriving newtype (Aeson.FromJSON)
-
 -- | Returns 'Nothing' in ordinary cases where this handle can't be resolved by
 -- DNS. May raise an exception if either the handle has an invalid TLD or
 -- something goes wrong with DNS resolution.
@@ -103,7 +104,7 @@ resolveViaDns handle@(Handle rawHandle)
 --
 -- Note that this handle shouldn't be considered valid for this DID until you've
 -- looked up the associated DID document and checked it appears there.
-resolveViaHttp :: HTTP.Manager -> Handle -> IO (Maybe Did)
+resolveViaHttp :: HasCallStack => HTTP.Manager -> Handle -> IO (Maybe Did)
 resolveViaHttp httpManager handle@(Handle rawHandle)
   | not (validTld handle) = error "handle has invalid TLD"
   | otherwise = do
@@ -123,3 +124,42 @@ resolveViaHttp httpManager handle@(Handle rawHandle)
           Nothing -> fail "JSON parsing failed"
           Just o -> either fail (pure . Just) $ Aeson.parseEither (.: "did") o
         other -> fail $ "Unexpected HTTP status " <> show other
+
+-- | Raised by 'resolveViaBoth' when both methods raise exceptions.
+data BothFailed = BothFailed
+  { dnsException :: Except.SomeException
+  , httpException :: Except.SomeException
+  } deriving stock (Show)
+    deriving anyclass (Except.Exception)
+
+-- | If either 'resolveViaDns' or 'resolveViaHttp' return a 'Did', return that
+-- 'Did'. Otherwise, if one or both of them raised an exception, reraise it (or
+-- them, via 'BothFailed'). (Otherwise, return 'Nothing').
+resolveViaBoth :: HasCallStack => HTTP.Manager -> Handle -> IO (Maybe Did)
+resolveViaBoth httpManager handle =
+  fromE =<< Async.concurrentlyE
+    (toE $ resolveViaDns handle)
+    (toE $ resolveViaHttp httpManager handle)
+  where
+    toE act = do
+      r <- Except.try act
+      case r of
+        Right (Just did) -> pure (Left did)
+        Right Nothing -> pure (Right Nothing)
+        Left err -> pure (Right (Just err))
+    fromE (Left r) = pure (Just r)
+    fromE (Right (Nothing, Nothing)) = pure Nothing
+    fromE (Right (Just e, Nothing)) = Except.throwIO e
+    fromE (Right (Nothing, Just e)) = Except.throwIO e
+    fromE (Right (Just dnsException, Just httpException)) =
+      Except.throwIO BothFailed{ dnsException, httpException }
+
+-- | Also fetches the DID document and checks that the handle is listed there.
+-- Raises an error if not.
+resolveVerify :: HasCallStack => HTTP.Manager -> Handle -> IO (Maybe Did)
+resolveVerify httpManager handle@(Handle rawHandle) = runMaybeT $ do
+  did <- MaybeT $ resolveViaBoth httpManager handle
+  Document{ alsoKnownAs } <- MaybeT $ getDocument httpManager did
+  unless (("at://" <> rawHandle) `elem` alsoKnownAs) $
+    error "Handle isn't in alsoKnownAs for its DID document"
+  pure did
