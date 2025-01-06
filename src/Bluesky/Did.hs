@@ -20,6 +20,7 @@ import qualified Network.HTTP.Types.Status as HTTP
 import qualified Network.URI as URI
 
 -- | https://atproto.com/specs/did
+--
 -- A DID is a Decentralized Identifier. They're codified by various W3C
 -- standards. This type only aims to capture how they are used in atproto.
 --
