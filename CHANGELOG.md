@@ -1,5 +1,9 @@
 # Revision history for bluesky-tools
 
+## 0.4.0.1
+
+* Support older versions of http-api-data
+
 ## 0.4.0.0 -- 2024-01-06
 
 * Stop exporting Document constructor so I can continue to change it.
