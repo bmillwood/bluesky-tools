@@ -4,6 +4,8 @@
 
 * Stop exporting Document constructor so I can continue to change it.
 * getPds retrieves the PDS URI from a DID document.
+* Add Handle.verifyHandle.
+* Tweak Handle.resolveVerify so that failing to fetch DID document is a verification failure.
 
 ## 0.2.2.0 -- 2024-01-05
 

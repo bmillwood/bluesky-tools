@@ -1,12 +1,12 @@
 module Bluesky.Handle
   ( Handle, rawHandle, makeHandle, HandleError(..), validTld
   , resolveViaDns, resolveViaHttp, resolveViaBoth, BothFailed(..)
-  , resolveVerify
+  , verifyHandle, resolveVerify
   ) where
 
 import qualified Control.Concurrent.Async as Async
 import qualified Control.Exception as Except
-import Control.Monad
+import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe
 import qualified Data.Aeson as Aeson
 import Data.Aeson ((.:))
@@ -155,12 +155,21 @@ resolveViaBoth httpManager handle =
     fromE (Right (Just dnsException, Just httpException)) =
       Except.throwIO BothFailed{ dnsException, httpException }
 
--- | Also fetches the DID document and checks that the handle is listed there.
--- Raises an error if not.
+-- | 'Just True' if this 'Handle' appears in the DID 'Document' for the 'Did'.
+-- 'Just False' if the document is available and doesn't affirm the handle.
+-- 'Nothing' if the document can't be fetched.
+verifyHandle :: HTTP.Manager -> Handle -> Did -> IO (Maybe Bool)
+verifyHandle httpManager (Handle rawHandle) did = runMaybeT $ do
+  doc <- MaybeT $ getDocument httpManager did
+  pure $ ("at://" <> rawHandle) `elem` alsoKnownAs doc
+
+-- | Combines 'resolveViaBoth' and 'verifyHandle'. Raises an error if
+-- verification fails.
 resolveVerify :: HasCallStack => HTTP.Manager -> Handle -> IO (Maybe Did)
-resolveVerify httpManager handle@(Handle rawHandle) = runMaybeT $ do
+resolveVerify httpManager handle = runMaybeT $ do
   did <- MaybeT $ resolveViaBoth httpManager handle
-  aka <- fmap alsoKnownAs . MaybeT $ getDocument httpManager did
-  unless (("at://" <> rawHandle) `elem` aka) $
-    error "Handle isn't in alsoKnownAs for its DID document"
-  pure did
+  verified <- lift $ verifyHandle httpManager handle did
+  case verified of
+    Nothing -> error "Can't get DID document to verify handle"
+    Just False -> error "Handle failed verification: not in DID document"
+    Just True -> pure did
