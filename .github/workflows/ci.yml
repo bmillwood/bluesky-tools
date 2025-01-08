@@ -43,7 +43,7 @@ jobs:
 
       - name: Configure the build
         run: |
-          cabal configure --enable-tests --enable-benchmarks --enable-documentation
+          cabal configure --enable-tests --enable-benchmarks --disable-documentation
           cabal build all --dry-run
         # The last step generates dist-newstyle/cache/plan.json for the cache key.
 
@@ -78,4 +78,4 @@ jobs:
         run: cabal test all
 
       - name: Build documentation
-        run: cabal haddock all
+        run: cabal haddock all --disable-documentation
