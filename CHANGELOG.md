@@ -1,6 +1,6 @@
 # Revision history for bluesky-tools
 
-## 0.5.0.0
+## 0.6.0.0 -- 2024-01-11
 
 * Support older versions of `http-api-data`.
 * Add `ToJSON Did`, and both `FromJSON`, `ToJSON` for `Handle`.
