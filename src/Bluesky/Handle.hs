@@ -110,7 +110,10 @@ resolveViaDns handle@(Handle rawHandle)
 
 -- | Returns 'Nothing' when the expected hostname reports 404 for the HTTP
 -- resolution endpoint. May raise an exception if either the handle has an
--- invalid TLD or there's no HTTP server at the expected domain at all.
+-- invalid TLD, the HTTP server doesn't return 200 or 404, or there's no HTTP
+-- server at the expected domain at all. (This is probably a bit too strict, and
+-- should ignore more HTTP errors, but I'll see based on my real-world
+-- experience.)
 --
 -- Note that this handle shouldn't be considered valid for this DID until you've
 -- looked up the associated DID document and checked it appears there.
@@ -164,8 +167,8 @@ resolveViaBoth httpManager handle =
     fromE (Right (Just dnsException, Just httpException)) =
       Except.throwIO BothFailed{ dnsException, httpException }
 
--- | 'Just True' if this 'Handle' appears in the DID 'Document' for the 'Did'.
--- 'Just False' if the document is available and doesn't affirm the handle.
+-- | @Just True@ if this 'Handle' appears in the DID 'Document' for the 'Did'.
+-- @Just False@ if the document is available and doesn't affirm the handle.
 -- 'Nothing' if the document can't be fetched.
 verifyHandle :: HTTP.Manager -> Handle -> Did -> IO (Maybe Bool)
 verifyHandle httpManager (Handle rawHandle) did = runMaybeT $ do
