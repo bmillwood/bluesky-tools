@@ -3,7 +3,7 @@
 ## 0.5.0.0
 
 * Support older versions of `http-api-data`.
-* Add `ToJSON Did`.
+* Add `ToJSON Did`, and both `FromJSON`, `ToJSON` for `Handle`.
 * Implement DID syntax validating `makeHandle`, and enforce it by removing the
   export of the `Did` constructor.
 

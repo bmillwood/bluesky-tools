@@ -16,6 +16,7 @@ import Data.Char
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text
 import Data.Text (Text)
+import GHC.Generics
 import GHC.Stack (HasCallStack)
 
 import qualified Network.DNS as DNS
@@ -27,7 +28,8 @@ import Bluesky.Did
 
 -- | https://atproto.com/specs/handle
 newtype Handle = Handle { rawHandle :: Text }
-  deriving stock (Eq, Ord, Show)
+  deriving stock (Eq, Ord, Show, Generic)
+  deriving newtype (Aeson.ToJSON)
 
 data HandleError
   = TooLong
@@ -77,6 +79,10 @@ validTld (Handle h) =
 
 instance FromHttpApiData Handle where
   parseUrlPiece = Bifunctor.first (Text.pack . show) . makeHandle
+
+instance Aeson.FromJSON Handle where
+  parseJSON =
+    Aeson.withText "Bluesky.Handle.Handle" $ either (fail . show) pure . makeHandle
 
 -- | Returns 'Nothing' in ordinary cases where this handle can't be resolved by
 -- DNS. May raise an exception if:

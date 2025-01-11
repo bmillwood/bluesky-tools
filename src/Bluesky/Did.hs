@@ -88,7 +88,7 @@ data Service = Service
   } deriving stock (Eq, Ord, Show, Generic)
 
 instance Aeson.FromJSON Service where
-  parseJSON = Aeson.withObject "Service" $ \o -> do
+  parseJSON = Aeson.withObject "Bluesky.Did.Service" $ \o -> do
     serviceId <- o .: "id"
     serviceType <- o .: "type"
     serviceEndpointString <- o .: "serviceEndpoint" -- [sic]
