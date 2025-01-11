@@ -79,8 +79,11 @@ instance FromHttpApiData Handle where
   parseUrlPiece = Bifunctor.first (Text.pack . show) . makeHandle
 
 -- | Returns 'Nothing' in ordinary cases where this handle can't be resolved by
--- DNS. May raise an exception if either the handle has an invalid TLD or
--- something goes wrong with DNS resolution.
+-- DNS. May raise an exception if:
+--
+-- * the handle has an invalid TLD,
+-- * something goes wrong with DNS resolution,
+-- * the DID returned is syntactically invalid.
 --
 -- Note that this handle shouldn't be considered valid for this DID until you've
 -- looked up the associated DID document and checked it appears there.
@@ -94,7 +97,7 @@ resolveViaDns handle@(Handle rawHandle)
         DNS.lookupTXT resolver ("_atproto." <> Text.encodeUtf8 rawHandle)
       case results of
         Right [Text.decodeASCII -> Text.stripPrefix "did=" -> Just rawDid] ->
-          pure (Just (Did rawDid))
+          either (error . show) (pure . Just) $ makeDid rawDid
         Right [] -> pure Nothing
         Left DNS.NameError -> pure Nothing
         other -> error (show other)

@@ -1,8 +1,11 @@
 # Revision history for bluesky-tools
 
-## 0.4.0.1
+## 0.5.0.0
 
-* Support older versions of http-api-data
+* Support older versions of `http-api-data`.
+* Add `ToJSON Did`.
+* Implement DID syntax validating `makeHandle`, and enforce it by removing the
+  export of the `Did` constructor.
 
 ## 0.4.0.0 -- 2024-01-06
 

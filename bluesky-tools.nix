@@ -3,7 +3,7 @@
 }:
 mkDerivation {
   pname = "bluesky-tools";
-  version = "0.4.0.0";
+  version = "0.5.0.0";
   src = ./.;
   libraryHaskellDepends = [
     aeson async base containers dns http-api-data http-client

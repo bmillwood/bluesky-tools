@@ -1,5 +1,5 @@
 module Bluesky.Did
-  ( Did(Did), rawDid
+  ( Did, rawDid, makeDid, DidError(..)
   , Document(alsoKnownAs), getPds
   , getDocument
   ) where
@@ -7,6 +7,7 @@ module Bluesky.Did
 import qualified Data.Aeson as Aeson
 import Data.Aeson ((.:))
 import qualified Data.Aeson.Types as Aeson
+import qualified Data.Char as Char
 import qualified Data.Map as Map
 import Data.Maybe
 import Data.Monoid (First(First, getFirst))
@@ -23,11 +24,48 @@ import qualified Network.URI as URI
 --
 -- A DID is a Decentralized Identifier. They're codified by various W3C
 -- standards. This type only aims to capture how they are used in atproto.
---
--- Currently we do not implement DID validation.
 newtype Did = Did { rawDid :: Text }
   deriving stock (Eq, Ord, Show)
-  deriving newtype (Aeson.FromJSON)
+  deriving newtype (Aeson.ToJSON)
+
+data DidError
+  = NoDidPrefix
+  | NoMethodSeparator
+    -- ^ after "did:", there must be another colon to delimit method from
+    -- identifier
+  | BadMethod
+    -- ^ method must match the regex @[a-z]+@; this does not check if the method
+    -- is supported by atproto
+  | BadIdentifierCharacters
+    -- ^ identifier section must match @[a-zA-Z0-9._:%-]@
+    -- (nb. that general DID URIs may also have query and fragment components,
+    -- i.e. @?@ and @#@ characters, but atproto DID identifiers may not)
+  | EndsWithColon
+  | BadPercentEncoding
+    -- ^ the spec says implementations don't need to validate percent encoding,
+    -- but we validate that every % is followed by two hex digits
+  deriving stock (Show, Eq, Ord)
+
+makeDid :: Text -> Either DidError Did
+makeDid raw
+  | not ("did:" `Text.isPrefixOf` raw) = Left NoDidPrefix
+  | Text.null method
+    || Text.any (not . isMethodChar) method = Left BadMethod
+  | Text.any (not . isIdentifierChar) colonBody = Left BadIdentifierCharacters
+  | Text.takeEnd 1 raw == ":" = Left EndsWithColon
+  | any (not . Text.all Char.isHexDigit) percentEncodes = Left BadPercentEncoding
+  | otherwise = Right (Did raw)
+  where
+    afterPrefix = Text.drop 4 raw
+    (method, colonBody) = Text.breakOn ":" afterPrefix
+    isMethodChar c = Char.isAscii c && Char.isLower c
+    isIdentifierChar c =
+      Char.isAscii c
+      && (Char.isAlphaNum c || elem c ("._:%-" :: [Char]))
+    percentEncodes = map (Text.take 2) . drop 1 $ Text.splitOn "%" colonBody
+
+instance Aeson.FromJSON Did where
+  parseJSON = Aeson.withText "Bluesky.Did.Did" $ either (fail . show) pure . makeDid
 
 -- | The DID methods supported by atproto. Note that DIDs are used outside of
 -- atproto and there are many more methods in those contexts, but we don't
@@ -37,8 +75,8 @@ data Method
   | Plc -- ^ https://github.com/did-method-plc/did-method-plc
   deriving stock (Eq, Ord, Show)
 
-method :: Did -> Maybe Method
-method Did{ rawDid }
+getMethod :: Did -> Maybe Method
+getMethod Did{ rawDid }
   | "did:web:" `Text.isPrefixOf` rawDid = Just Web
   | "did:plc:" `Text.isPrefixOf` rawDid = Just Plc
   | otherwise = Nothing
@@ -96,7 +134,7 @@ instance Aeson.FromJSON Document where
 -- | This is currently only implemented for did:plc: DIDs.
 getDocument :: HasCallStack => HTTP.Manager -> Did -> IO (Maybe Document)
 getDocument httpManager did@(Did rawDid) =
-  case method did of
+  case getMethod did of
     Nothing -> error "Unknown DID method"
     Just Web -> error "Support for did:web: is not yet implemented"
     Just Plc -> do

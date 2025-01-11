@@ -18,6 +18,7 @@ testReject expectedErr t = case makeHandle t of
 
 main :: IO ()
 main = do
+  -- examples from the docs
   mapM_ testAccept
     [ "jay.bsky.social"
     , "8.cn"
