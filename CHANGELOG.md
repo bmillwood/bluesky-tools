@@ -1,6 +1,6 @@
 # Revision history for bluesky-tools
 
-## 0.6.0.1
+## 0.6.0.2 -- 2025-05-26
 
 * Dependency version updates
 
