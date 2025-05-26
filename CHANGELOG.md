@@ -1,5 +1,9 @@
 # Revision history for bluesky-tools
 
+## 0.6.0.1
+
+* Dependency version updates
+
 ## 0.6.0.0 -- 2024-01-11
 
 * Support older versions of `http-api-data`.
