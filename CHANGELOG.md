@@ -1,5 +1,9 @@
 # Revision history for bluesky-tools
 
+## 0.6.0.3
+
+* Fix HTTPS resolution to use the correct URL.
+
 ## 0.6.0.2 -- 2025-05-26
 
 * Dependency version updates

@@ -9,9 +9,8 @@ import qualified Control.Exception as Except
 import Control.Monad.Trans.Class (lift)
 import Control.Monad.Trans.Maybe
 import qualified Data.Aeson as Aeson
-import Data.Aeson ((.:))
-import qualified Data.Aeson.Types as Aeson
 import qualified Data.Bifunctor as Bifunctor
+import qualified Data.ByteString.Lazy as BSL
 import Data.Char
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as Text
@@ -129,13 +128,14 @@ resolveViaHttp httpManager handle@(Handle rawHandle)
           -- (It still might be better to construct the URL in some structured way
           -- that insists the handle can only go in the hostname portion. But this
           -- will do.)
-          ("https://" <> rawHandleString <> "/xrpc/com.atproto.identity.resolveHandle?handle=" <> rawHandleString)
+          ("https://" <> rawHandleString <> "/.well-known/atproto-did")
       resp <- HTTP.httpLbs req httpManager
       case HTTP.statusCode (HTTP.responseStatus resp) of
         404 -> pure Nothing
-        200 -> case Aeson.decode (HTTP.responseBody resp) of
-          Nothing -> fail "JSON parsing failed"
-          Just o -> either fail (pure . Just) $ Aeson.parseEither (.: "did") o
+        200 ->
+          either (fail . show) (pure . Just) . makeDid
+          . Text.decodeASCII . BSL.toStrict
+          $ HTTP.responseBody resp
         other -> fail $ "Unexpected HTTP status " <> show other
 
 -- | Raised by 'resolveViaBoth' when both methods raise exceptions.
