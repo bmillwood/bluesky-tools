@@ -1,7 +1,7 @@
 cabal-version:      3.4
 
 name:               bluesky-tools
-version:            0.6.0.3
+version:            0.6.0.4
 synopsis:           Tools for interacting with Bluesky / AT Protocol
 description:
   bluesky-tools provides tools that I've found useful while trying to integrate
