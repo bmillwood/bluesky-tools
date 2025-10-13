@@ -2,7 +2,9 @@ name: Upgrade dependencies
 on:
   schedule:
   - cron: "30 17 * * 5" # Friday afternoon
-  pull_request: # remove after testing
+  push: # remove after testing
+    branches:
+    - main
 
 jobs:
   upgrade:
@@ -13,3 +15,4 @@ jobs:
     - uses: renovatebot/github-action@v43.0.16
       with:
         token: ${{ secrets.RENOVATE_TOKEN }}
+        configurationFile: .github/renovatebot.json
