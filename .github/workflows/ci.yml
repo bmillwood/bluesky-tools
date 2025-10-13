@@ -1,7 +1,13 @@
 name: Build and run tests
 on:
-- pull_request
-- push
+  pull_request:
+    paths:
+    - .github/workflows/ci.yml
+    - "*.cabal"
+    - "**.hs"
+  push:
+    branches:
+    - main
 
 # Below copies significantly from
 # https://github.com/haskell-actions/setup/blob/v2.6.2/README.md
