@@ -1,5 +1,9 @@
 # Revision history for bluesky-tools
 
+## 0.6.0.5
+
+* Dependency version updates: base-4.22 for ghc-9.14
+
 ## 0.6.0.4 -- 2025-08-02
 
 * Fix HTTPS resolution to use the correct URL.
