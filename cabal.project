@@ -3,12 +3,8 @@ packages: .
 allow-newer: http-api-data:base,http-api-data:containers
 -- https://github.com/haskell-hvr/uuid/issues/95
 allow-newer: uuid-types:template-haskell
--- https://github.com/haskellari/splitmix/issues/113
-allow-newer: splitmix:base
 -- https://github.com/haskellari/time-compat/issues/48
 allow-newer: time-compat:base,time-compat:time
--- https://github.com/phadej/integer-conversion/issues/8
-allow-newer: integer-conversion:base
 -- https://github.com/haskell/aeson/issues/1155
 allow-newer: text-iso8601:time,aeson:containers,aeson:template-haskell,aeson:time
 -- https://github.com/simonmar/async/issues/175
