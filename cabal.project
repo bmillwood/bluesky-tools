@@ -9,8 +9,6 @@ allow-newer: time-compat:base,time-compat:time
 allow-newer: text-iso8601:time,aeson:containers,aeson:template-haskell,aeson:time
 -- https://github.com/simonmar/async/issues/175
 allow-newer: async:base
--- https://github.com/basvandijk/scientific/issues/105
-allow-newer: scientific:base,scientific:containers,scientific:template-haskell
 -- https://github.com/haskellari/indexed-traversable/issues/50
 allow-newer: indexed-traversable-instances:base
 -- https://github.com/haskellari/indexed-traversable/issues/49
@@ -21,5 +19,3 @@ allow-newer: indexed-traversable:containers
 allow-newer: these:base
 -- https://github.com/haskellari/these/issues/207
 allow-newer: semialign:base,semialign:containers
--- https://github.com/haskell/hsc2hs/issues/105
-allow-newer: hsc2hs:base
