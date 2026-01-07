@@ -7,8 +7,6 @@ allow-newer: uuid-types:template-haskell
 allow-newer: time-compat:base,time-compat:time
 -- https://github.com/haskell/aeson/issues/1155
 allow-newer: text-iso8601:time,aeson:containers,aeson:template-haskell,aeson:time
--- https://github.com/simonmar/async/issues/175
-allow-newer: async:base
 -- https://github.com/haskellari/indexed-traversable/issues/50
 allow-newer: indexed-traversable-instances:base
 -- https://github.com/haskellari/indexed-traversable/issues/49
