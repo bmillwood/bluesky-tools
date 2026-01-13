@@ -2,7 +2,8 @@
 
 ## 0.6.0.5
 
-* Dependency version updates: base-4.22 for ghc-9.14
+* Allow base-4.22 for ghc-9.14
+* Allow http-api-data-0.7
 
 ## 0.6.0.4 -- 2025-08-02
 
