@@ -18,6 +18,6 @@ jobs:
         app-id: ${{ secrets.RENOVATE_APP_ID }}
         private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
     - uses: actions/checkout@v6
-    - uses: renovatebot/github-action@v46.0.0
+    - uses: renovatebot/github-action@v46.1.5
       with:
         token: ${{ steps.app-token.outputs.token }}
