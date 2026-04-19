@@ -2,5 +2,15 @@
   "extends": [
     "config:recommended"
   ],
-  "pinDigests": true
+  "pinDigests": true,
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update renovate-version",
+      "managerFilePatterns": [".github/workflows/*"],
+      "matchStrings": [
+        "-version:\\s*(?<currentValue>[0-9.]+)\\s*# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)"
+      ]
+    }
+  ]
 }
