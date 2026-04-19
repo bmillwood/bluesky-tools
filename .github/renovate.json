@@ -6,7 +6,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "Update renovate-version",
+      "description": "Update *-version parameters",
       "managerFilePatterns": [".github/workflows/*"],
       "matchStrings": [
         "-version:\\s*(?<currentValue>[0-9.]+)\\s*# renovate: datasource=(?<datasource>[a-z-]+) depName=(?<depName>\\S+)"
