@@ -32,5 +32,5 @@ jobs:
     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
     - uses: renovatebot/github-action@693b9ef15eec82123529a37c782242f091365961 # v46.1.14
       with:
-        renovate-version: 43.170.9 # renovate: datasource=docker depName=ghcr.io/renovatebot/renovate
+        renovate-version: 43.204.0 # renovate: datasource=docker depName=ghcr.io/renovatebot/renovate
         token: ${{ steps.app-token.outputs.token }}
