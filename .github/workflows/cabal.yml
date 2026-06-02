@@ -1,11 +1,10 @@
-name: Build and run tests
 on:
   push:
     branches:
       - main
   pull_request:
     paths:
-    - .github/workflows/ci.yml
+    - .github/workflows/cabal.yml
     - cabal.project
     - "**.cabal"
     - "**.hs"
