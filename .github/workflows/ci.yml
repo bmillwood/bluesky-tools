@@ -1,10 +1,13 @@
 name: Build and run tests
 on:
+  push:
+    branches:
+      - main
   pull_request:
     paths:
     - .github/workflows/ci.yml
-    - "*.cabal"
     - cabal.project
+    - "**.cabal"
     - "**.hs"
 
 # Below copies significantly from
@@ -14,12 +17,11 @@ on:
 # which may be desirable for projects with a costly build process.
 # Remove this block from the CI workflow to let each CI job run to completion.
 concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: true
+  group: build-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
   build:
-    name: Build on GHC ${{ matrix.ghc-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -29,9 +31,15 @@ jobs:
     defaults:
       run:
         shell: bash -euo pipefail {0}
+    env:
+      # false for non-PR triggers
+      IS_RENOVATE: ${{ startsWith(github.head_ref, 'renovate/') }}
 
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          # for pulling Renovate New-Version trailers later
+          fetch-depth: ${{ env.IS_RENOVATE == 'true' && '0' || '1' }}
 
       - name: Set up GHC ${{ matrix.ghc-version }}
         uses: haskell-actions/setup@cd0d9bdd65b20557f41bea4dbe43d0b5fbbfe553 # v2.11.0
@@ -44,6 +52,22 @@ jobs:
 
       - name: Check cabal file
         run: cabal check
+
+        # inspired by, but distinct from,
+        # https://github.com/haskell-actions/setup/blob/main/docs/examples.md#dependency-updates
+      - name: Require new package versions are tested
+        if: env.IS_RENOVATE == 'true'
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git log \
+            --format="%(trailers:key=New-Version,valueonly=true)" \
+            "$BASE..$HEAD" \
+            | sort -u \
+            | grep . \
+            | sed -re 's/^/constraints: /' \
+            | tee -a cabal.project
 
       - name: Configure the build
         run: |
