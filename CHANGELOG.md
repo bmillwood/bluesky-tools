@@ -1,6 +1,6 @@
 # Revision history for bluesky-tools
 
-## 0.6.0.5
+## 0.6.0.6 -- 2026-06-02
 
 * Allow base-4.22 for ghc-9.14
 * Allow http-api-data-0.7
