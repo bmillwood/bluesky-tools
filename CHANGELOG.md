@@ -1,5 +1,7 @@
 # Revision history for bluesky-tools
 
+## 0.6.0.7
+
 ## 0.6.0.6 -- 2026-06-02
 
 * Allow base-4.22 for ghc-9.14
