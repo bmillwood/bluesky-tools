@@ -2,10 +2,13 @@
 
 ## 0.6.0.7
 
+* Switch cabal ^>= constraints into explicit ranges.
+* Allow `aeson-2.3`.
+
 ## 0.6.0.6 -- 2026-06-02
 
-* Allow base-4.22 for ghc-9.14
-* Allow http-api-data-0.7
+* Allow `base-4.22` for `ghc-9.14`.
+* Allow `http-api-data-0.7`.
 
 ## 0.6.0.4 -- 2025-08-02
 
