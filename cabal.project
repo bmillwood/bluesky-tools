@@ -1,3 +1,5 @@
 packages: .
 -- https://github.com/fizruk/http-api-data/issues/152
 allow-newer: http-api-data:base,http-api-data:containers
+-- https://github.com/fizruk/http-api-data/issues/158
+allow-newer: http-api-data:text-iso8601
