@@ -8,28 +8,6 @@ on:
     - .github/workflows/renovate.yml
 
 jobs:
-  upgrade:
-    runs-on: ubuntu-latest
-    env:
-      RENOVATE_DRY_RUN: ${{ github.event_name == 'pull_request' }}
-      RENOVATE_ONBOARDING: false
-      RENOVATE_REPOSITORIES: ${{ github.repository }}
-      LOG_LEVEL: debug
-    steps:
-    - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
-      id: app-token
-      with:
-        client-id: ${{ secrets.RENOVATE_APP_CLIENT_ID }}
-        private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
-        permission-contents: write
-        permission-issues: write
-        permission-workflows: write
-        # When run from a PR, it should be in dry-run mode, so shouldn't create PRs.
-        # But if it did, it's not too hard to imagine a PR creation loop. So
-        # let's add another layer of protection.
-        permission-pull-requests: "${{ github.event_name == 'pull_request' && 'read' || 'write' }}"
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-    - uses: renovatebot/github-action@693b9ef15eec82123529a37c782242f091365961 # v46.1.14
-      with:
-        renovate-version: 43.214.4 # renovate: datasource=docker depName=ghcr.io/renovatebot/renovate
-        token: ${{ steps.app-token.outputs.token }}
+  upgrade-dependencies:
+    uses: bmillwood/renovateconfig/.github/workflows/renovate.yml@6f8c265fdfe937a94ccc63a226077b4dc983f7dd # main
+    secrets: inherit
