@@ -9,7 +9,7 @@ on:
       - '**.cabal'
 
 env:
-  nixpkgs_version: d233902339c02a9c334e7e593de68855ad26c4cb # renovate: datasource=git-refs depName=NixOS/nixpkgs packageName=https://github.com/NixOS/nixpkgs currentValue=nixos-unstable
+  nixpkgs_version: 567a49d1913ce81ac6e9582e3553dd90a955875f # renovate: datasource=git-refs depName=NixOS/nixpkgs packageName=https://github.com/NixOS/nixpkgs currentValue=nixos-unstable
 
 jobs:
   test:
