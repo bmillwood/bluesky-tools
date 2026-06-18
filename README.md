@@ -18,7 +18,7 @@ for this library will be:
 * Between releases, if I make a major change, I bump B by one (making it
   odd) and zero C and D. Similarly, if I make a minor change (and haven't made a
   major change yet), I bump C by one and zero D. It's not necessary to bump
-  anything if the corresponding component is already odd.
+  anything if the corresponding component or a more major one is already odd.
 * Versions with odd components (apart from the first, which I bump according to
   my whims) therefore may exist in many different Git revisions, potentially
   with breaking changes between them, and are ambiguous. This is fine, because
