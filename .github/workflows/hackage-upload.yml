@@ -13,6 +13,11 @@ jobs:
         shell: bash -euo pipefail {0}
     steps:
     - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+    - run: |
+        git config --global user.name "$GIT_USER"
+        git config --global user.email "${GIT_USER}[bot]@users.noreply.github.com"
+      env:
+        GIT_USER: ${{ github.actor }}
     - run: ./bump_version.py
     - run: cabal sdist
     - uses: haskell-actions/hackage-publish@73c1489054aa60b7aa082cdde9b51502d960c0e1 # v1.1
