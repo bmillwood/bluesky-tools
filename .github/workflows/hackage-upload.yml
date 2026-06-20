@@ -3,7 +3,10 @@ on:
     inputs:
       dryRun:
         type: boolean
-        default: false
+        default: true
+
+permissions:
+  contents: write
 
 jobs:
   hackage-upload:
