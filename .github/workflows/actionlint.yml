@@ -1,4 +1,7 @@
 on:
+  push:
+    paths:
+    - .github/workflows/*.yml
   pull_request:
     paths:
     - .github/workflows/*.yml
