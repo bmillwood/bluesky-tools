@@ -10,6 +10,9 @@ permissions:
 
 jobs:
   hackage-upload:
+    # 'default-branch' has HACKAGE_AUTH_TOKEN
+    # nb. ${{ true && '' || 'default-branch' }} evaluates to 'default-branch'
+    environment: ${{ !inputs.dryRun && 'default-branch' || '' }}
     runs-on: ubuntu-latest
     defaults:
       run:
