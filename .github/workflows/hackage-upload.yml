@@ -4,6 +4,12 @@ on:
       dryRun:
         type: boolean
         default: true
+  push:
+    branches:
+    - main
+  pull_request:
+    paths:
+    - .github/workflows/hackage-upload.yml
 
 permissions:
   contents: write
@@ -11,8 +17,9 @@ permissions:
 jobs:
   hackage-upload:
     # 'default-branch' has HACKAGE_AUTH_TOKEN
-    # nb. ${{ true && '' || 'default-branch' }} evaluates to 'default-branch'
-    environment: ${{ !inputs.dryRun && 'default-branch' || '' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'default-branch' || '' }}
+    env:
+      DRY_RUN: ${{ github.event_name != 'workflow_dispatch' || inputs.dryRun }}
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -27,8 +34,8 @@ jobs:
     - run: ./bump_version.py
     - run: cabal sdist
     - uses: haskell-actions/hackage-publish@73c1489054aa60b7aa082cdde9b51502d960c0e1 # v1.1
-      if: ${{ !inputs.dryRun }}
+      if: ${{ !env.DRY_RUN }}
       with:
         hackageToken: ${{ secrets.HACKAGE_AUTH_TOKEN }}
     - run: git push
-      if: ${{ !inputs.dryRun }}
+      if: ${{ !env.DRY_RUN }}
